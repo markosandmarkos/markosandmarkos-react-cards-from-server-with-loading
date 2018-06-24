@@ -63,7 +63,7 @@ class App extends Component {
     }
 
     loadMoreHandler = () => {
-        console.log(this.state.limit);
+
         this.setState(oldState => {
 
             const addLimit = 5;
