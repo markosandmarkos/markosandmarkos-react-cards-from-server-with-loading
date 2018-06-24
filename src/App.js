@@ -30,10 +30,19 @@ const classes = {
 
 class App extends Component {
 
+    constructor(props) {
+
+        super(props);
+
+        this.ADD_LIMIT = 10;
+        this.MAX_LIMIT = 50;
+
+    }
+
     state = {
         loaded: false,
         serverData: [],
-        limit: 5
+        limit: 10
     };
 
     loadDataFromServer() {
@@ -66,11 +75,9 @@ class App extends Component {
 
         this.setState(oldState => {
 
-            const addLimit = 5;
-
-            if (oldState.limit + addLimit < 50) {
+            if (oldState.limit + this.ADD_LIMIT <= this.MAX_LIMIT) {
                 return {
-                    limit: oldState.limit + addLimit
+                    limit: oldState.limit + this.ADD_LIMIT
                 }
             }
 
@@ -122,10 +129,10 @@ class App extends Component {
             <div>
                 <Grid container>
                     {this.state.loaded ? this.generateCards() : App.generateLoading()}
-                    {(this.state.loaded && this.state.limit <= 50) &&
+                    {(this.state.loaded && this.state.limit < this.MAX_LIMIT) &&
                     <Grid item xs={3} style={classes.grid}>
                         <Button onClick={this.loadMoreHandler} variant="contained" color="secondary">
-                            Load More
+                            Load More {this.ADD_LIMIT}
                         </Button>
                     </Grid>
                     }
