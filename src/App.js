@@ -66,7 +66,7 @@ class App extends Component {
     }
 
     componentDidUpdate(_, prevState) {
-        if (this.state.limit !== prevState.limit && this.state.limit <= 100) {
+        if (this.state.limit !== prevState.limit && this.state.limit <= this.MAX_LIMIT) {
             this.loadDataFromServer();
         }
     }
