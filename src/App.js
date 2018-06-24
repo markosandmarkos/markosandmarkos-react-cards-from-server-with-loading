@@ -8,19 +8,37 @@ import {
     CardMedia,
     Typography,
     CircularProgress,
-    Chip
+    Chip, Button
 } from "@material-ui/core/es/index";
+
+const classes = {
+    progress: {
+        margin: '200px auto',
+        textAlign: 'center'
+    },
+    grid: {
+        padding: '20px'
+    },
+    card: {
+        maxWidth: 345,
+    },
+    cardMedia: {
+        height: 0,
+        paddingTop: '56.25%'
+    },
+};
 
 class App extends Component {
 
     state = {
         loaded: false,
-        serverData: []
+        serverData: [],
+        limit: 5
     };
 
-    componentDidMount() {
+    loadDataFromServer() {
 
-        const serverUrl = 'https://api.dailymotion.com/users?fields=id,username,screenname,cover_250_url,avatar_120_url,videos_total,fans_total&list=recommended&limit=20';
+        const serverUrl = 'https://api.dailymotion.com/users?fields=id,username,screenname,cover_250_url,avatar_120_url,videos_total,fans_total&list=recommended&limit=' + this.state.limit;
 
         fetch(serverUrl)
             .then((response) => {
@@ -32,18 +50,34 @@ class App extends Component {
                     serverData: serverData
                 });
             });
-
     }
 
-    static generateLoading() {
+    componentDidMount() {
+        this.loadDataFromServer();
+    }
 
-        const classes = {
-            progress: {
-                margin: '200px auto',
-                textAlign: 'center'
+    componentDidUpdate(_, prevState) {
+        if (this.state.limit !== prevState.limit && this.state.limit <= 100) {
+            this.loadDataFromServer();
+        }
+    }
+
+    loadMoreHandler = () => {
+        console.log(this.state.limit);
+        this.setState(oldState => {
+
+            const addLimit = 5;
+
+            if (oldState.limit + addLimit < 50) {
+                return {
+                    limit: oldState.limit + addLimit
+                }
             }
-        };
 
+        });
+    };
+
+    static generateLoading() {
         return (
             <div style={classes.progress}>
                 <CircularProgress/>
@@ -55,20 +89,6 @@ class App extends Component {
     }
 
     generateCards() {
-
-        const classes = {
-            grid: {
-                padding: '20px'
-            },
-            card: {
-                maxWidth: 345,
-            },
-            cardMedia: {
-                height: 0,
-                paddingTop: '56.25%'
-            },
-
-        };
 
         return this.state.serverData.list.map((value) => {
             return (
@@ -99,9 +119,18 @@ class App extends Component {
 
     render() {
         return (
-            <Grid container>
-                {this.state.loaded ? this.generateCards() : App.generateLoading()}
-            </Grid>
+            <div>
+                <Grid container>
+                    {this.state.loaded ? this.generateCards() : App.generateLoading()}
+                    {(this.state.loaded && this.state.limit <= 50) &&
+                    <Grid item xs={3} style={classes.grid}>
+                        <Button onClick={this.loadMoreHandler} variant="contained" color="secondary">
+                            Load More
+                        </Button>
+                    </Grid>
+                    }
+                </Grid>
+            </div>
         );
     }
 }
