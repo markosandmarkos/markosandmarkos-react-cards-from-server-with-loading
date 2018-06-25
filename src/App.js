@@ -34,16 +34,16 @@ class App extends Component {
 
         super(props);
 
+        this.state = {
+            loaded: false,
+            serverData: [],
+            limit: 10
+        };
+
         this.ADD_LIMIT = 10;
         this.MAX_LIMIT = 50;
 
     }
-
-    state = {
-        loaded: false,
-        serverData: [],
-        limit: 10
-    };
 
     loadDataFromServer() {
 
