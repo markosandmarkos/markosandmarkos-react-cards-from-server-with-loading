@@ -30,24 +30,16 @@ const classes = {
 
 class App extends Component {
 
-    constructor(props) {
-
-        super(props);
-
-        this.ADD_LIMIT = 10;
-        this.MAX_LIMIT = 50;
-
-    }
-
+    ADD_LIMIT = 10;
+    MAX_LIMIT = 50;
+    limit = 10;
     state = {
-        loaded: false,
-        serverData: [],
-        limit: 10
+        serverData: []
     };
 
-    loadDataFromServer() {
+    loadDataFromServer = () => {
 
-        const serverUrl = 'https://api.dailymotion.com/users?fields=id,username,screenname,cover_250_url,avatar_120_url,videos_total,fans_total&list=recommended&limit=' + this.state.limit;
+        const serverUrl = 'https://api.dailymotion.com/users?fields=id,username,screenname,cover_250_url,avatar_120_url,videos_total,fans_total&list=recommended&limit=' + this.limit;
 
         fetch(serverUrl)
             .then((response) => {
@@ -55,89 +47,71 @@ class App extends Component {
             })
             .then((serverData) => {
                 this.setState({
-                    loaded: true,
-                    serverData: serverData
+                    serverData: serverData.list
                 });
             });
-    }
+    };
 
     componentDidMount() {
         this.loadDataFromServer();
     }
 
-    componentDidUpdate(_, prevState) {
-        if (this.state.limit !== prevState.limit && this.state.limit <= this.MAX_LIMIT) {
-            this.loadDataFromServer();
-        }
-    }
-
     loadMoreHandler = () => {
 
-        this.setState(oldState => {
+        if (this.limit + 10 <= this.MAX_LIMIT) {
+            this.limit += 10;
+            this.loadDataFromServer();
+        }
 
-            if (oldState.limit + this.ADD_LIMIT <= this.MAX_LIMIT) {
-                return {
-                    limit: oldState.limit + this.ADD_LIMIT
-                }
-            }
-
-        });
     };
-
-    static generateLoading() {
-        return (
-            <div style={classes.progress}>
-                <CircularProgress/>
-                <Typography size={50} gutterBottom variant="headline" component="h2">
-                    Please wait...
-                </Typography>
-            </div>
-        );
-    }
-
-    generateCards() {
-
-        return this.state.serverData.list.map((value) => {
-            return (
-                <Grid key={value.id} item xs={3} style={classes.grid}>
-                    <Card style={classes.card}>
-                        <CardMedia
-                            style={classes.cardMedia}
-                            image={value.avatar_120_url + ""}
-                            title="Contemplative Reptile"
-                        />
-                        <CardContent>
-                            <Typography gutterBottom variant="headline" component="h2">
-                                {value.username}
-                            </Typography>
-                            <Typography component="p">
-                                {value.screenname}
-                            </Typography>
-                        </CardContent>
-                        <CardActions>
-                            <Chip color="primary" label={'Fans total: ' + value.fans_total}/>
-                            <Chip label={'Videos total: ' + value.videos_total}/>
-                        </CardActions>
-                    </Card>
-                </Grid>
-            );
-        })
-    }
 
     render() {
         return (
-            <div>
+            <React.Fragment>
                 <Grid container>
-                    {this.state.loaded ? this.generateCards() : App.generateLoading()}
-                    {(this.state.loaded && this.state.limit < this.MAX_LIMIT) &&
-                    <Grid item xs={3} style={classes.grid}>
-                        <Button onClick={this.loadMoreHandler} variant="contained" color="secondary">
-                            Load More {this.ADD_LIMIT}
-                        </Button>
-                    </Grid>
+                    {this.state.serverData.length !== 0 ?
+                        this.state.serverData.map((value) => {
+                            return (
+                                <Grid key={value.id} item xs={3} style={classes.grid}>
+                                    <Card style={classes.card}>
+                                        <CardMedia
+                                            style={classes.cardMedia}
+                                            image={value.avatar_120_url + ""}
+                                            title="Contemplative Reptile"
+                                        />
+                                        <CardContent>
+                                            <Typography gutterBottom variant="headline" component="h2">
+                                                {value.username}
+                                            </Typography>
+                                            <Typography component="p">
+                                                {value.screenname}
+                                            </Typography>
+                                        </CardContent>
+                                        <CardActions>
+                                            <Chip color="primary" label={'Fans total: ' + value.fans_total}/>
+                                            <Chip label={'Videos total: ' + value.videos_total}/>
+                                        </CardActions>
+                                    </Card>
+                                </Grid>
+                            );
+                        })
+                        : (<div style={classes.progress}>
+                            <CircularProgress/>
+                            <Typography size={50} gutterBottom variant="headline" component="h2">
+                                Please wait...
+                            </Typography>
+                        </div>)
+                    }
+
+                    {(this.state.serverData.length !== 0 && this.limit < this.MAX_LIMIT) ?
+                        (<Grid item xs={3} style={classes.grid}>
+                            <Button onClick={this.loadMoreHandler} variant="contained" color="secondary">
+                                Load More {this.ADD_LIMIT}
+                            </Button>
+                        </Grid>) : null
                     }
                 </Grid>
-            </div>
+            </React.Fragment>
         );
     }
 }
